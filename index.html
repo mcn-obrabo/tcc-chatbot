@@ -238,7 +238,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem}
 <section id="tarefas">
   <span class="eyebrow">O que vocês fazem</span>
   <h2>Checklist do trio</h2>
-  <div class="progresso"><div class="medidor"><span id="prog" style="width:0%"></span></div><span class="mono small" id="progtxt">0 de 7</span></div>
+  <div class="progresso"><div class="medidor"><span id="prog" style="width:0%"></span></div><span class="mono small" id="progtxt">0 de 5</span></div>
   <div class="tarefas" id="tarefas"></div>
   <p class="small">As marcações ficam salvas só neste navegador.</p>
 </section>
@@ -305,8 +305,6 @@ RES.forEach((r,k)=>{
 
 const TAREFAS = [
   {h:"Ler o artigo inteiro em voz alta, juntos", d:"Onde uma frase soar estranha ou \"de robô\", reescrevam com as palavras de vocês. Vocês precisam saber explicar tudo.", q:"os três", p:"esta semana"},
-  {h:"Preencher a planilha dos 98 comentários", d:"Para cada um: o cliente reclama da entrega ou do atendimento? S ou N. Cada João na sua coluna, sem olhar a do outro. Depois avisem o Claude.", q:"João Vitor e João Pedro", p:"esta semana"},
-  {h:"Desempatar a planilha", d:"Onde os dois discordarem, preencher a coluna \"decisão final\".", q:"Matheus", p:"depois da planilha"},
   {h:"Conferir três livros na biblioteca", d:"Gil (Como elaborar projetos de pesquisa, 8. ed.), Marconi e Lakatos (Fundamentos de metodologia científica, 9. ed.) e Dresch (Design science research). Ver edição, cidade e ano.", q:"qualquer um", p:"antes de entregar"},
   {h:"Mostrar o PDF ao prof. Gabriel", d:"Levar numa orientação. Mudanças que ele pedir, passem para o Claude ajustar.", q:"os três", p:"próxima orientação"},
   {h:"Entregar o Apêndice D assinado", d:"Ficha de acompanhamento das orientações, para wagner.casagrande@multivix.edu.br.", q:"os três", p:"até 12/11"},
@@ -346,7 +344,6 @@ CARTAS.forEach(([q,a])=>{
 const ARQS = [
   ["O artigo (PDF para entregar)","C:\\projetos\\tcc\\artigo\\TCC-chatbot-sentimento.pdf"],
   ["O artigo (Word, para editar)","C:\\projetos\\tcc\\artigo\\TCC-chatbot-sentimento.docx"],
-  ["Planilha dos 98 comentários","C:\\projetos\\tcc\\anotacao\\anotacao_98_casos.xlsx"],
   ["Relatório do revisor","C:\\projetos\\tcc\\revisao\\codex.md"],
   ["Código do experimento","C:\\projetos\\tcc\\experimento"],
   ["Código do protótipo","C:\\projetos\\tcc\\prototipo"]
