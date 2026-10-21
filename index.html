@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guia do TCC Chatbot</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: coluna única de leitura (máx. 980px), navegação fixa em chips; cada seção é uma "parada" de uma conversa de atendimento. */
+:root{
+  --bg:#f2f6f5; --surface:#ffffff; --ink:#10221f; --muted:#56706b; --line:#d6e2df;
+  --accent:#0f7b6c; --accent-soft:#d9efea;
+  --go:#1f8a4c; --go-soft:#dcf1e4; --warn:#b7791f; --warn-soft:#f8ecd6; --stop:#c2410c; --stop-soft:#fbe3d7;
+  --bubble-me:#0f7b6c; --bubble-me-ink:#ffffff; --bubble-bot:#e7efed;
+  --font-display:"Unbounded", "Trebuchet MS", sans-serif;
+  --font-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --font-mono:"JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0c1615; --surface:#13211f; --ink:#e3efec; --muted:#93aca7; --line:#253935;
+  --accent:#3cc2ad; --accent-soft:#163a35;
+  --go:#4ccb83; --go-soft:#163526; --warn:#e3a64b; --warn-soft:#3a2c15; --stop:#f27a4d; --stop-soft:#3d2018;
+  --bubble-me:#2aa996; --bubble-me-ink:#04201c; --bubble-bot:#1c2e2b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0c1615; --surface:#13211f; --ink:#e3efec; --muted:#93aca7; --line:#253935;
+  --accent:#3cc2ad; --accent-soft:#163a35;
+  --go:#4ccb83; --go-soft:#163526; --warn:#e3a64b; --warn-soft:#3a2c15; --stop:#f27a4d; --stop-soft:#3d2018;
+  --bubble-me:#2aa996; --bubble-me-ink:#04201c; --bubble-bot:#1c2e2b; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.6;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;line-height:1.15;margin:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);font-weight:700}
+h3{font-size:1.02rem;font-weight:500}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+
+/* navegação */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:8px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+nav a{flex:none;text-decoration:none;color:var(--ink);font-weight:600;font-size:.88rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);transition:background .2s,color .2s}
+nav a.ativo{background:var(--accent);border-color:var(--accent);color:var(--bubble-me-ink)}
+
+section{padding-top:56px;display:grid;gap:20px;scroll-margin-top:64px}
+.eyebrow{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center;padding-top:40px}
+.hero h1{font-size:clamp(1.7rem,4.4vw,2.7rem);font-weight:700}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{font-size:.8rem;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px;display:grid;gap:10px;min-width:0}
+.msg{max-width:88%;padding:10px 14px;border-radius:16px;font-size:.93rem;animation:entra .5s both}
+.msg.cli{justify-self:end;background:var(--bubble-me);color:var(--bubble-me-ink);border-bottom-right-radius:4px}
+.msg.bot{justify-self:start;background:var(--bubble-bot);border-bottom-left-radius:4px}
+.msg.sis{justify-self:center;background:var(--stop-soft);color:var(--ink);font-size:.8rem;font-family:var(--font-mono)}
+.chat .msg:nth-child(2){animation-delay:.5s}.chat .msg:nth-child(3){animation-delay:1.1s}.chat .msg:nth-child(4){animation-delay:1.7s}
+@keyframes entra{from{transform:translateY(8px);opacity:.25}to{transform:none;opacity:1}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.big{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--accent);line-height:1}
+.small{font-size:.86rem;color:var(--muted)}
+
+/* simulador */
+.sim{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.lista{display:grid;gap:8px;align-content:start}
+.lista button{all:unset;cursor:pointer;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:.9rem;line-height:1.35;transition:transform .15s,border-color .15s}
+.lista button:hover{transform:translateX(3px);border-color:var(--accent)}
+.lista button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.lista button:focus-visible{outline:3px solid var(--accent)}
+.palco{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:14px;align-content:start;min-width:0}
+.medidor{height:14px;border-radius:999px;background:var(--line);overflow:hidden;position:relative}
+.medidor span{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--go),var(--warn),var(--stop));border-radius:999px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.medidor i{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.6}
+.decisao{display:inline-flex;align-items:center;gap:8px;font-weight:700;padding:6px 14px;border-radius:999px;font-size:.95rem;animation:pop .35s both}
+.decisao.segue{background:var(--go-soft);color:var(--go)}.decisao.tom{background:var(--warn-soft);color:var(--warn)}.decisao.transfere{background:var(--stop-soft);color:var(--stop)}
+@keyframes pop{from{transform:scale(.85)}to{transform:scale(1)}}
+.licao{border-left:3px solid var(--accent);padding-left:12px;color:var(--ink)}
+
+/* resultados */
+.tabela{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9rem;min-width:560px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+td.n{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}
+.barra{height:8px;border-radius:999px;background:var(--accent);animation:cresce 1.2s cubic-bezier(.2,.8,.2,1) both;transform-origin:left}
+@keyframes cresce{from{transform:scaleX(.05)}to{transform:none}}
+tr.destaque td{background:var(--accent-soft)}
+
+/* descobertas */
+.achados{display:grid;gap:12px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px}
+details[open]{border-color:var(--accent)}
+summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::after{content:"+";font-family:var(--font-mono);color:var(--accent);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{margin-top:10px;color:var(--ink)}
+
+/* linha do tempo */
+.tempo{display:grid;gap:0;position:relative}
+.passo{display:grid;grid-template-columns:28px 1fr;gap:14px;padding-bottom:18px}
+.passo .pt{width:14px;height:14px;border-radius:50%;background:var(--accent);margin:6px 7px 0;position:relative}
+.passo:not(:last-child) .pt::after{content:"";position:absolute;left:6px;top:16px;width:2px;height:calc(100% + 40px);background:var(--line)}
+
+/* tarefas */
+.tarefas{display:grid;gap:10px}
+.tarefa{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;transition:opacity .2s}
+.tarefa input{width:22px;height:22px;accent-color:var(--accent);margin-top:2px}
+.tarefa.feita{opacity:.55}.tarefa.feita h3{text-decoration:line-through}
+.quem{font-size:.76rem;font-family:var(--font-mono);padding:3px 8px;border-radius:8px;background:var(--accent-soft);white-space:nowrap}
+.prazo{color:var(--stop);font-weight:700}
+.progresso{display:flex;align-items:center;gap:12px}
+.progresso .medidor{flex:1}
+.progresso .medidor span{background:var(--accent)}
+
+/* banca */
+.cartas{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.carta{all:unset;cursor:pointer;perspective:900px;min-height:200px;display:block}
+.carta:focus-visible{outline:3px solid var(--accent);border-radius:16px}
+.lado{position:absolute;inset:0;border-radius:16px;padding:18px;backface-visibility:hidden;transition:transform .55s;display:grid;align-content:start;gap:8px;border:1px solid var(--line)}
+.carta-in{position:relative;min-height:200px;height:100%}
+.frente{background:var(--surface)}
+.verso{background:var(--accent-soft);transform:rotateY(180deg);font-size:.88rem}
+.carta.virada .frente{transform:rotateY(-180deg)}.carta.virada .verso{transform:rotateY(0)}
+.carta .q{font-family:var(--font-display);font-size:.98rem;font-weight:500}
+
+/* arquivos */
+.arquivos{display:grid;gap:8px}
+.arq{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:0}
+.arq code{font-family:var(--font-mono);font-size:.8rem;overflow-wrap:anywhere;color:var(--muted)}
+.btn{all:unset;cursor:pointer;font-size:.8rem;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--accent);color:var(--bubble-me-ink)}
+.btn:focus-visible{outline:3px solid var(--ink)}
+footer{margin-top:56px;color:var(--muted);font-size:.85rem}
+
+@media (max-width:760px){
+  .hero,.sim{grid-template-columns:1fr}
+  .grid3,.cartas{grid-template-columns:1fr}
+  .tarefa{grid-template-columns:auto 1fr}
+  .tarefa .quem{grid-column:2}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav aria-label="Seções"><div class="wrap">
+  <a href="#inicio">O que é</a><a href="#simulador">Teste o chatbot</a><a href="#resultados">Resultados</a><a href="#descobertas">Descobertas</a><a href="#feito">O que foi feito</a><a href="#tarefas">O que vocês fazem</a><a href="#banca">Perguntas da banca</a><a href="#arquivos">Arquivos</a>
+</div></nav>
+
+<main class="wrap">
+
+<section id="inicio" class="hero">
+  <div style="display:grid;gap:14px;min-width:0">
+    <span class="eyebrow">TCC · Engenharia da Computação · Multivix Serra</span>
+    <h1>Um chatbot que percebe quando o cliente <em>precisa de uma pessoa</em></h1>
+    <p class="lead">O tema da faculdade era "atendimento com chatbot e análise de sentimento". O trabalho virou uma pergunta concreta: qual jeito de medir a irritação do cliente acerta mais, responde mais rápido e custa menos, para o robô saber a hora de passar a conversa para um atendente?</p>
+    <div class="meta">
+      <span class="tag">Matheus Campos do Nascimento</span><span class="tag">João Vitor Moreira Souza</span><span class="tag">João Pedro Souza Becacici</span><span class="tag">Orientador: prof. Gabriel Corona de Oliveira</span>
+    </div>
+  </div>
+  <div class="chat" aria-label="Exemplo de conversa do protótipo">
+    <div class="msg cli">Oi, queria saber onde está meu pedido</div>
+    <div class="msg bot">O rastreio fica em "Meus pedidos", com o código da transportadora.</div>
+    <div class="msg cli">Já passou 10 dias do prazo e nada, que absurdo, ninguém resolve</div>
+    <div class="msg sis">insatisfação 0,998 → transferido com o histórico</div>
+  </div>
+</section>
+
+<section aria-labelledby="t-resumo">
+  <h2 id="t-resumo" class="eyebrow" style="font-family:var(--font-mono);font-size:.74rem">Em três números</h2>
+  <div class="grid3">
+    <div class="card"><div class="big mono">8</div><p class="small">formas de medir sentimento testadas na AWS, com 3.020 avaliações reais de clientes brasileiros</p></div>
+    <div class="card"><div class="big mono">36×</div><p class="small">mais barato: o Amazon Nova Micro acertou o mesmo que o Amazon Comprehend</p></div>
+    <div class="card"><div class="big mono">77%</div><p class="small">dos pedidos "quero falar com alguém" passam batido se o robô olhar só o sentimento</p></div>
+  </div>
+</section>
+
+<section id="simulador">
+  <span class="eyebrow">Teste o chatbot</span>
+  <h2>Clique numa mensagem e veja o que o robô decidiu</h2>
+  <p class="lead">Todas são mensagens e escores reais dos testes, com o modelo que mediu cada um. A barra mostra a chance de o cliente estar insatisfeito, e a linha preta marca o limite a partir do qual o robô transfere.</p>
+  <div class="sim">
+    <div class="lista" id="lista" role="group" aria-label="Mensagens de exemplo"></div>
+    <div class="palco" id="palco" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="resultados">
+  <span class="eyebrow">Resultados</span>
+  <h2>Todo mundo acerta parecido. O preço muda muito.</h2>
+  <p class="lead">"Acerto" aqui é o F1 para achar o cliente insatisfeito (1 seria perfeito). O custo é para classificar mil mensagens. A latência é o tempo de resposta medido dentro da AWS.</p>
+  <div class="card tabela">
+    <table>
+      <thead><tr><th>Modelo</th><th>Tipo</th><th style="text-align:right">Acerto (F1)</th><th style="text-align:right">US$ / mil msgs</th><th style="width:28%">Custo relativo</th><th style="text-align:right">Tempo</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="small">O BERTimbau (linha destacada) foi o melhor, mas precisou ser treinado com mais de 40 mil exemplos e um servidor próprio. O TF-IDF roda dentro do próprio chatbot, quase de graça.</p>
+</section>
+
+<section id="descobertas">
+  <span class="eyebrow">Descobertas</span>
+  <h2>O que o trabalho mostrou (clique para abrir)</h2>
+  <div class="achados">
+    <details open><summary>1. O BERTimbau treinado ganhou, se houver dados</summary><p>O modelo brasileiro BERTimbau, ajustado com as avaliações, teve o melhor acerto geral (F1 macro 0,736) e o menor custo de erro na hora de decidir transferir. Ele precisa de dados rotulados para treinar. O treino custou US$ 0,26 numa máquina com GPU da AWS.</p></details>
+    <details><summary>2. Sem dados para treinar, o Nova Micro é a melhor compra</summary><p>Acerta praticamente o mesmo que o Comprehend (serviço pronto da AWS) e custa cerca de 36 vezes menos. O Comprehend cobra no mínimo 300 caracteres por mensagem, então mensagem curta paga caro. Em compensação, o Comprehend é o mais rápido: 22 milissegundos.</p></details>
+    <details><summary>3. Modelo maior não ajudou</summary><p>O Claude Sonnet 4.6, o mais caro, custou US$ 1,07 por mil mensagens (120 vezes o Nova Micro) e não foi melhor que os menores para decidir a transferência.</p></details>
+    <details><summary>4. Sentimento não substitui o botão "falar com atendente"</summary><p>Quem pede educadamente "pode me passar para alguém?" não soa irritado. Olhando só o sentimento, 77% desses pedidos seriam ignorados. O pedido precisa de um detector próprio; o Claude Haiku 5.5 reconheceu 98,7%.</p></details>
+    <details><summary>5. O que vale para avaliação não vale direto para chat</summary><p>O limite calibrado com avaliações de compra transferiu clientes de suporte que só estavam contando um problema ("minha internet parou"). Antes de usar de verdade, é preciso calibrar com conversas reais da empresa.</p></details>
+    <details><summary>6. Um erro que é acerto, e um acerto que é erro</summary><p>Clientes deram 5 estrelas ao produto e reclamaram da entrega ("Produto 10, entrega 0"). Os modelos de linguagem marcaram como reclamação, o que é certo para atendimento. Já a ironia ("Parabéns, Americanas!" com entrega atrasada) enganou o BERTimbau, e o Haiku 5.5 pegou todas.</p></details>
+  </div>
+</section>
+
+<section id="feito">
+  <span class="eyebrow">O que foi feito</span>
+  <h2>Do PDF do manual ao artigo pronto</h2>
+  <div class="tempo">
+    <div class="passo"><span class="pt"></span><div><h3>Leitura do manual e do cronograma</h3><p class="small">Artigo científico original, 15 a 20 páginas, ABNT, Plagius, entrega até 13/11.</p></div></div>
+    <div class="passo"><span class="pt"></span><div><h3>Pesquisa com três frentes em paralelo</h3><p class="small">Artigos acadêmicos, serviços e preços da AWS, dados e leis do Brasil. Achou o Decreto nº 13.135/2026, a lei nova do SAC, publicada este mês.</p></div></div>
+    <div class="passo"><span class="pt"></span><div><h3>Dados reais</h3><p class="small">B2W-Reviews01: 132 mil avaliações da Americanas, filtradas para entrega e atendimento (45.618). O Consumidor.gov.br não tem o texto das reclamações, e o Reclame Aqui proíbe copiar dados.</p></div></div>
+    <div class="passo"><span class="pt"></span><div><h3>Experimento na AWS</h3><p class="small">8 classificadores, cada um aplicado a 3.020 textos de teste. BERTimbau treinado no Amazon SageMaker. Latência medida dentro da AWS. Testes estatísticos.</p></div></div>
+    <div class="passo"><span class="pt"></span><div><h3>Protótipo do chatbot</h3><p class="small">API Gateway, Lambda, Bedrock, SQS e DynamoDB. Esconde CPF e telefone, guarda o histórico por 90 dias e manda a conversa inteira para a fila do atendente.</p></div></div>
+    <div class="passo"><span class="pt"></span><div><h3>Redação no formato Multivix</h3><p class="small">O Word é gerado por script com margens, fonte, legendas e referências do manual. As tabelas saem direto dos resultados, sem número digitado à mão.</p></div></div>
+    <div class="passo"><span class="pt"></span><div><h3>Revisão independente</h3><p class="small">Outro modelo (Codex) tentou derrubar o trabalho e achou 25 problemas, como estatística no resultado errado e exagero sobre a lei. Todos foram corrigidos.</p></div></div>
+  </div>
+</section>
+
+<section id="tarefas">
+  <span class="eyebrow">O que vocês fazem</span>
+  <h2>Checklist do trio</h2>
+  <div class="progresso"><div class="medidor"><span id="prog" style="width:0%"></span></div><span class="mono small" id="progtxt">0 de 7</span></div>
+  <div class="tarefas" id="tarefas"></div>
+  <p class="small">As marcações ficam salvas só neste navegador.</p>
+</section>
+
+<section id="banca">
+  <span class="eyebrow">Perguntas da banca</span>
+  <h2>Treine as respostas (clique na carta para virar)</h2>
+  <div class="cartas" id="cartas"></div>
+</section>
+
+<section id="arquivos">
+  <span class="eyebrow">Arquivos</span>
+  <h2>Onde está cada coisa (no PC do Matheus)</h2>
+  <div class="arquivos" id="arqs"></div>
+</section>
+
+<footer>Guia feito a partir dos resultados do experimento de 21/10/2026. Números do artigo: versão 2, revisada.</footer>
+</main>
+
+<script>
+const LIMIAR = 0.70;
+const MSGS = [
+  {t:"Oi, queria saber onde está meu pedido", p:0.0001, f:"Amazon Comprehend", d:"segue", r:"O robô responde com a política da loja: o rastreio fica em \"Meus pedidos\".", l:"Pergunta normal, sem irritação: o robô resolve sozinho."},
+  {t:"Já passou 10 dias do prazo e nada, que absurdo, ninguém resolve", p:0.998, f:"Amazon Comprehend", d:"transfere", r:"Transferido para um atendente, com a conversa inteira. O cliente não precisa repetir nada.", l:"Esse é o caso ideal: irritação clara, transferência na hora."},
+  {t:"Oi, vc pode me ajudar com um problema no meu celular? Ele ta sem sinal", p:0.80, f:"Amazon Nova Micro", d:"transfere", r:"Transferido. Mas o cliente só estava pedindo ajuda.", l:"Erro por mudança de domínio: em avaliações, falar de problema vem com nota baixa; no chat, quase toda primeira mensagem fala de problema."},
+  {t:"Olá, pode me passar para alguém, por favor?", p:0.0, f:"Amazon Comprehend", d:"segue", r:"A regra de palavras não reconheceu o pedido, e o sentimento é neutro. O robô segue, o que é errado.", l:"Por isso o pedido de atendente precisa de detector próprio. O Claude Haiku 5.5 reconheceu 98,7% desses pedidos."},
+  {t:"beleza, muito obrigado pela ajuda! vc é um show de atendente", p:0.0, f:"Amazon Comprehend", d:"transfere", r:"Sentimento zero, mas a regra de palavras viu \"atendente\" e transferiu um cliente feliz.", l:"Procurar palavra solta gera alarme falso."},
+  {t:"Parabéns, Americanas! Agendei a entrega para 14/03 e hoje o site diz 21/03", p:0.85, f:"Amazon Nova Micro", d:"transfere", r:"O Nova Micro entendeu a ironia (0,85). O BERTimbau deu 0,06 e chamou de elogio.", l:"Modelos de linguagem pegam ironia melhor que o modelo treinado."},
+  {t:"Produto 10 entrega 0. Produto cumpre a expectativa, mas a entrega demorou mais o site prometeu", p:0.68, f:"Claude Haiku 5.5", d:"tom", r:"Abaixo do limite de 0,70: em vez de transferir, o robô responde com tom empático.", l:"Faixa intermediária: reclamação sem irritação forte muda o tom da resposta. Com o Nova Micro (0,70) essa mesma mensagem já seria transferida."}
+];
+const NOMES = {segue:"Robô continua", tom:"Responde com tom empático", transfere:"Transfere para atendente"};
+const lista = document.getElementById("lista"), palco = document.getElementById("palco");
+function mostra(i){
+  const m = MSGS[i];
+  [...lista.children].forEach((b,k)=>b.setAttribute("aria-pressed", String(k===i)));
+  palco.innerHTML = `
+    <div class="chat" style="border:0;padding:0"><div class="msg cli">${m.t}</div></div>
+    <div><div class="small">Chance de insatisfação: <b class="mono">${m.p.toLocaleString("pt-BR",{maximumFractionDigits:3})}</b> · medida pelo ${m.f}</div>
+    <div class="medidor" style="margin-top:6px"><span style="width:0%"></span><i style="left:${LIMIAR*100}%" title="limite 0,70"></i></div></div>
+    <div><span class="decisao ${m.d}">${NOMES[m.d]}</span></div>
+    <p>${m.r}</p><p class="licao small">${m.l}</p>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ palco.querySelector(".medidor span").style.width = (m.p*100)+"%"; }));
+}
+MSGS.forEach((m,i)=>{ const b=document.createElement("button"); b.textContent=m.t; b.onclick=()=>mostra(i); lista.appendChild(b); });
+mostra(1);
+
+const RES = [
+  ["BERTimbau ajustado","treinado",0.913,0.015,"165 ms",1],
+  ["Claude Sonnet 4.6","IA generativa",0.905,1.068,"995 ms"],
+  ["Amazon Nova 2 Lite","IA generativa",0.901,0.152,"443 ms"],
+  ["Claude Haiku 5.5","IA generativa",0.897,0.045,"723 ms"],
+  ["Amazon Comprehend","serviço pronto",0.894,0.327,"22 ms"],
+  ["Amazon Nova Micro","IA generativa",0.894,0.009,"341 ms"],
+  ["Claude Haiku 4.5","IA generativa",0.894,0.371,"622 ms"],
+  ["TF-IDF + regressão","clássico",0.889,0,"1,5 ms*"]
+];
+const tb = document.getElementById("tbody"), max = Math.max(...RES.map(r=>r[3]));
+RES.forEach((r,k)=>{
+  const tr=document.createElement("tr"); if(r[5]) tr.className="destaque";
+  const w = Math.max(1.5, r[3]/max*100);
+  tr.innerHTML=`<td><b>${r[0]}</b></td><td class="small">${r[1]}</td><td class="n">${r[2].toFixed(3).replace(".",",")}</td><td class="n">${r[3]===0?"≈ 0":r[3].toLocaleString("pt-BR",{maximumFractionDigits:3})}</td><td><div class="barra" style="width:${w}%;animation-delay:${k*80}ms"></div></td><td class="n">${r[4]}</td>`;
+  tb.appendChild(tr);
+});
+
+const TAREFAS = [
+  {h:"Ler o artigo inteiro em voz alta, juntos", d:"Onde uma frase soar estranha ou \"de robô\", reescrevam com as palavras de vocês. Vocês precisam saber explicar tudo.", q:"os três", p:"esta semana"},
+  {h:"Preencher a planilha dos 98 comentários", d:"Para cada um: o cliente reclama da entrega ou do atendimento? S ou N. Cada João na sua coluna, sem olhar a do outro. Depois avisem o Claude.", q:"João Vitor e João Pedro", p:"esta semana"},
+  {h:"Desempatar a planilha", d:"Onde os dois discordarem, preencher a coluna \"decisão final\".", q:"Matheus", p:"depois da planilha"},
+  {h:"Conferir três livros na biblioteca", d:"Gil (Como elaborar projetos de pesquisa, 8. ed.), Marconi e Lakatos (Fundamentos de metodologia científica, 9. ed.) e Dresch (Design science research). Ver edição, cidade e ano.", q:"qualquer um", p:"antes de entregar"},
+  {h:"Mostrar o PDF ao prof. Gabriel", d:"Levar numa orientação. Mudanças que ele pedir, passem para o Claude ajustar.", q:"os três", p:"próxima orientação"},
+  {h:"Entregar o Apêndice D assinado", d:"Ficha de acompanhamento das orientações, para wagner.casagrande@multivix.edu.br.", q:"os três", p:"até 12/11"},
+  {h:"Enviar o PDF no portal TOTVS", d:"Só em PDF. Fora do prazo é nota zero.", q:"Matheus", p:"até 13/11"}
+];
+const CH="tcc-checklist-v1"; let feitas={};
+try{ feitas = JSON.parse(localStorage.getItem(CH)||"{}"); }catch(e){ feitas={}; }
+const tw=document.getElementById("tarefas");
+function atualiza(){
+  const n = TAREFAS.filter((_,i)=>feitas[i]).length;
+  document.getElementById("prog").style.width = (n/TAREFAS.length*100)+"%";
+  document.getElementById("progtxt").textContent = `${n} de ${TAREFAS.length}`;
+}
+TAREFAS.forEach((t,i)=>{
+  const el=document.createElement("label"); el.className="tarefa"+(feitas[i]?" feita":""); el.htmlFor="t"+i;
+  el.innerHTML=`<input type="checkbox" id="t${i}" ${feitas[i]?"checked":""}><div style="min-width:0"><h3>${t.h}</h3><p class="small">${t.d}</p></div><div style="display:grid;gap:4px;justify-items:end"><span class="quem">${t.q}</span><span class="small prazo">${t.p}</span></div>`;
+  el.querySelector("input").onchange=e=>{ feitas[i]=e.target.checked; el.classList.toggle("feita",e.target.checked); try{localStorage.setItem(CH,JSON.stringify(feitas));}catch(_){} atualiza(); };
+  tw.appendChild(el);
+});
+atualiza();
+
+const CARTAS = [
+  ["Por que usaram avaliações de produto e não conversas reais de chat?", "Não existe base pública em português com conversas de atendimento rotuladas. O Consumidor.gov.br não publica o texto, e o Reclame Aqui proíbe copiar dados. Usamos o B2W-Reviews01 filtrado para entrega e atendimento, e declaramos isso como limitação."],
+  ["O que é F1?", "Uma nota de 0 a 1 que junta duas coisas: dos clientes que o modelo apontou como insatisfeitos, quantos eram mesmo (precisão), e dos insatisfeitos de verdade, quantos ele achou (revocação)."],
+  ["Se o BERTimbau ganhou, por que o protótipo usa o Nova Micro?", "O BERTimbau precisa de dados rotulados e de um servidor próprio. O Nova Micro não precisa de nada disso, é o mais barato, pega ironia e teve o limite estável nos três cenários de custo. Com dados, a recomendação é o BERTimbau."],
+  ["O chatbot cumpre a lei do SAC?", "O Decreto 13.135/2026 vale a partir de 02/11 para serviços regulados (operadoras, bancos). Para a loja do exemplo, usamos as regras como referência. O protótipo encaminha com histórico e guarda 90 dias, mas não tem atendente real, então não afirmamos cumprimento integral."],
+  ["Por que a AWS da Virgínia e não São Paulo?", "O Comprehend e os modelos testados não estavam disponíveis em São Paulo. Isso aumenta o tempo de resposta e envolve transferência internacional de dados, o que a LGPD regula."],
+  ["Como escolheram o limite para transferir?", "Pelo custo do erro: deixar um cliente irritado com o robô foi considerado 5 vezes pior que chamar um atendente à toa. O limite foi escolhido num conjunto separado (validação) e testado em outro. Também testamos 2 e 10 vezes."]
+];
+const cw=document.getElementById("cartas");
+CARTAS.forEach(([q,a])=>{
+  const b=document.createElement("button"); b.className="carta"; b.setAttribute("aria-label","Pergunta: "+q+". Clique para ver a resposta.");
+  b.innerHTML=`<div class="carta-in"><div class="lado frente"><span class="eyebrow">pergunta</span><span class="q">${q}</span><span class="small">clique para virar</span></div><div class="lado verso"><span class="eyebrow">resposta</span><span>${a}</span></div></div>`;
+  b.onclick=()=>b.classList.toggle("virada"); cw.appendChild(b);
+});
+
+const ARQS = [
+  ["O artigo (PDF para entregar)","C:\\projetos\\tcc\\artigo\\TCC-chatbot-sentimento.pdf"],
+  ["O artigo (Word, para editar)","C:\\projetos\\tcc\\artigo\\TCC-chatbot-sentimento.docx"],
+  ["Planilha dos 98 comentários","C:\\projetos\\tcc\\anotacao\\anotacao_98_casos.xlsx"],
+  ["Relatório do revisor","C:\\projetos\\tcc\\revisao\\codex.md"],
+  ["Código do experimento","C:\\projetos\\tcc\\experimento"],
+  ["Código do protótipo","C:\\projetos\\tcc\\prototipo"]
+];
+const aw=document.getElementById("arqs");
+ARQS.forEach(([n,c])=>{
+  const d=document.createElement("div"); d.className="arq";
+  d.innerHTML=`<div style="min-width:0"><b>${n}</b><br><code>${c}</code></div><button class="btn">Copiar</button>`;
+  d.querySelector("button").onclick=async e=>{ try{ await navigator.clipboard.writeText(c); e.target.textContent="Copiado"; }catch(_){ const r=document.createRange(); r.selectNodeContents(d.querySelector("code")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent="Selecionado"; } setTimeout(()=>e.target.textContent="Copiar",1600); };
+  aw.appendChild(d);
+});
+
+const links=[...document.querySelectorAll("nav a")];
+const obs=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){ links.forEach(a=>a.classList.toggle("ativo",a.getAttribute("href")==="#"+en.target.id)); }}),{rootMargin:"-40% 0px -55% 0px"});
+document.querySelectorAll("main section[id]").forEach(s=>obs.observe(s));
+</script>
+
+</body>
+</html>
